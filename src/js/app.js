@@ -1,17 +1,16 @@
 // ---------- Storage ----------
 
-const STORAGE_KEY = "dailyscore-data";
+const SCORE_STORAGE_KEY = "dailyscore-data";
+const ACTIVITY_STORAGE_KEY = "dailyscore-activities";
 
 const today = new Date();
-
 const todayKey = today.toISOString().split("T")[0];
 
 
-// Load saved data from localStorage
+// ---------- Storage Functions ----------
 
-function loadData() {
-
-    const savedData = localStorage.getItem(STORAGE_KEY);
+function loadScores() {
+    const savedData = localStorage.getItem(SCORE_STORAGE_KEY);
 
     if (savedData === null) {
         return {};
@@ -20,140 +19,212 @@ function loadData() {
     return JSON.parse(savedData);
 }
 
-
-// Save data to localStorage
-
-function saveData(data) {
-
+function saveScores(data) {
     localStorage.setItem(
-        STORAGE_KEY,
+        SCORE_STORAGE_KEY,
         JSON.stringify(data)
+    );
+}
+
+function loadActivities() {
+    const savedActivities =
+        localStorage.getItem(ACTIVITY_STORAGE_KEY);
+
+    if (savedActivities === null) {
+        return [
+            {
+                id: "study",
+                name: "Study",
+                active: true
+            },
+            {
+                id: "coding",
+                name: "Coding",
+                active: true
+            },
+            {
+                id: "exercise",
+                name: "Exercise",
+                active: true
+            },
+            {
+                id: "running",
+                name: "Running",
+                active: true
+            },
+            {
+                id: "sleep",
+                name: "Sleep",
+                active: true
+            },
+            {
+                id: "reading",
+                name: "Reading",
+                active: true
+            },
+            {
+                id: "football",
+                name: "Football",
+                active: true
+            },
+            {
+                id: "personal-routine",
+                name: "Personal Routine",
+                active: true
+            }
+        ];
+    }
+
+    return JSON.parse(savedActivities);
+}
+
+function saveActivities() {
+    localStorage.setItem(
+        ACTIVITY_STORAGE_KEY,
+        JSON.stringify(activities)
     );
 }
 
 
 // ---------- Activities ----------
 
-const activities = [
-    {
-        id: "study",
-        name: "Study",
-        active: true
-    },
-    {
-        id: "coding",
-        name: "Coding",
-        active: true
-    },
-    {
-        id: "exercise",
-        name: "Exercise",
-        active: true
-    },
-    {
-        id: "running",
-        name: "Running",
-        active: true
-    },
-    {
-        id: "sleep",
-        name: "Sleep",
-        active: true
-    },
-    {
-        id: "reading",
-        name: "Reading",
-        active: true
-    },
-    {
-        id: "football",
-        name: "Football",
-        active: true
-    },
-    {
-        id: "personal-routine",
-        name: "Personal Routine",
-        active: true
+let activities = loadActivities();
+
+const activityList =
+    document.getElementById("activity-list");
+
+function renderActivities() {
+
+    // Clear the existing activity rows
+    activityList.innerHTML = "";
+
+    activities
+        .filter(function (activity) {
+            return activity.active;
+        })
+        .forEach(function (activity) {
+
+            const activityRow =
+                document.createElement("div");
+
+            activityRow.classList.add("activity-row");
+
+            activityRow.dataset.activityId =
+                activity.id;
+
+            const activityName =
+                document.createElement("span");
+
+            activityName.textContent =
+                activity.name;
+
+            const scoreInput =
+                document.createElement("input");
+
+            scoreInput.type = "number";
+            scoreInput.min = "0";
+            scoreInput.max = "10";
+
+            // Load today's saved score
+            const scores = loadScores();
+
+            const savedScore =
+                scores[todayKey]?.[activity.id];
+
+            scoreInput.value =
+                savedScore ?? 0;
+
+            scoreInput.addEventListener(
+                "input",
+                calculateDailyScore
+            );
+
+           const maxScore =
+    document.createElement("span");
+
+maxScore.textContent = "/ 10";
+
+
+// ---------- Remove Button ----------
+
+const removeButton =
+    document.createElement("button");
+
+removeButton.textContent = "Remove";
+removeButton.classList.add("remove-btn");
+
+removeButton.addEventListener("click", function () {
+
+    const confirmed =
+        confirm(`Remove "${activity.name}" from your tracker?`);
+
+    if (!confirmed) {
+        return;
     }
-];
 
-const activityList = document.getElementById("activity-list");
+    // Deactivate instead of deleting
+    activity.active = false;
 
+    // Save the updated activity configuration
+    saveActivities();
 
-// Load all saved data once
+    // Redraw the activity list
+    renderActivities();
 
-const savedData = loadData();
-
-
-// Create activity rows
-
-activities
-    .filter(function (activity) {
-        return activity.active;
-    })
-    .forEach(function (activity) {
-
-        const activityRow = document.createElement("div");
-
-        activityRow.classList.add("activity-row");
-
-        activityRow.dataset.activityId = activity.id;
+    // Recalculate today's score
+    calculateDailyScore();
+});
 
 
-        // Activity name
+activityRow.appendChild(activityName);
+activityRow.appendChild(scoreInput);
+activityRow.appendChild(maxScore);
+activityRow.appendChild(removeButton);
 
-        const activityName = document.createElement("span");
-
-        activityName.textContent = activity.name;
-
-
-        // Score input
-
-        const scoreInput = document.createElement("input");
-
-        scoreInput.type = "number";
-
-        scoreInput.min = "0";
-
-        scoreInput.max = "10";
+activityList.appendChild(activityRow);
+        });
+}
 
 
-        // Load today's saved score
+// ---------- Add Activity ----------
 
-        const savedScore =
-            savedData[todayKey]?.[activity.id];
+const addActivityButton =
+    document.getElementById("add-activity-btn");
 
-        scoreInput.value = savedScore ?? 0;
+addActivityButton.addEventListener(
+    "click",
+    function () {
 
+        const name =
+            prompt("Enter activity name:");
 
-        // Recalculate and save when score changes
+        if (name === null) {
+            return;
+        }
 
-        scoreInput.addEventListener(
-            "input",
-            calculateDailyScore
-        );
+        const cleanedName =
+            name.trim();
 
+        if (cleanedName === "") {
+            alert("Activity name cannot be empty.");
+            return;
+        }
 
-        // Maximum score label
+        const newActivity = {
+            id: Date.now().toString(),
+            name: cleanedName,
+            active: true
+        };
 
-        const maxScore = document.createElement("span");
+        activities.push(newActivity);
 
-        maxScore.textContent = "/ 10";
+        saveActivities();
 
+        renderActivities();
 
-        // Build the row
-
-        activityRow.appendChild(activityName);
-
-        activityRow.appendChild(scoreInput);
-
-        activityRow.appendChild(maxScore);
-
-
-        // Add row to page
-
-        activityList.appendChild(activityRow);
-    });
+        calculateDailyScore();
+    }
+);
 
 
 // ---------- Daily Score ----------
@@ -161,27 +232,20 @@ activities
 function calculateDailyScore() {
 
     const scoreInputs =
-        document.querySelectorAll(".activity-row input");
+        document.querySelectorAll(
+            ".activity-row input"
+        );
 
     let totalScore = 0;
 
     const maximumScore =
         scoreInputs.length * 10;
 
+    const scores = loadScores();
 
-    // Load current data
-
-    const data = loadData();
-
-
-    // Create today's record if it doesn't exist
-
-    if (!data[todayKey]) {
-        data[todayKey] = {};
+    if (!scores[todayKey]) {
+        scores[todayKey] = {};
     }
-
-
-    // Process every activity
 
     scoreInputs.forEach(function (input) {
 
@@ -193,25 +257,18 @@ function calculateDailyScore() {
 
         totalScore += score;
 
-        data[todayKey][activityId] = score;
+        scores[todayKey][activityId] =
+            score;
     });
 
+    saveScores(scores);
 
-    // Save today's scores
-
-    saveData(data);
-
-
-    // Calculate percentage
-
-    const percentage = maximumScore > 0
-        ? Math.round(
-            (totalScore / maximumScore) * 100
-        )
-        : 0;
-
-
-    // Update score display
+    const percentage =
+        maximumScore > 0
+            ? Math.round(
+                (totalScore / maximumScore) * 100
+            )
+            : 0;
 
     document.getElementById("score").textContent =
         totalScore;
@@ -238,6 +295,7 @@ dateElement.textContent =
     });
 
 
-// ---------- Initial Score ----------
+// ---------- Initial Load ----------
 
+renderActivities();
 calculateDailyScore();
