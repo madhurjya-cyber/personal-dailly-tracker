@@ -131,3 +131,18 @@ button {
     background: #dc2626;
     color: white;
 }
+/* ---------- Rename Activity Button ---------- */
+
+.rename-btn {
+    padding: 6px 10px;
+    border: 1px solid #6b7280;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+}
+
+.rename-btn:hover {
+    background: #374151;
+    color: white;
+}

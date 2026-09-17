@@ -144,6 +144,43 @@ function renderActivities() {
 
 maxScore.textContent = "/ 10";
 
+// ---------- Rename Button ----------
+
+const renameButton =
+    document.createElement("button");
+
+renameButton.textContent = "Rename";
+renameButton.classList.add("rename-btn");
+
+renameButton.addEventListener("click", function () {
+
+    const newName =
+        prompt("Enter new activity name:", activity.name);
+
+    if (newName === null) {
+        return;
+    }
+
+    const cleanedName =
+        newName.trim();
+
+    if (cleanedName === "") {
+        alert("Activity name cannot be empty.");
+        return;
+    }
+
+    // Change only the display name
+    activity.name = cleanedName;
+
+    // Keep the same activity ID
+    saveActivities();
+
+    // Redraw the activity list
+    renderActivities();
+
+    // Recalculate today's score
+    calculateDailyScore();
+});
 
 // ---------- Remove Button ----------
 
@@ -179,6 +216,7 @@ removeButton.addEventListener("click", function () {
 activityRow.appendChild(activityName);
 activityRow.appendChild(scoreInput);
 activityRow.appendChild(maxScore);
+activityRow.appendChild(renameButton);
 activityRow.appendChild(removeButton);
 
 activityList.appendChild(activityRow);
