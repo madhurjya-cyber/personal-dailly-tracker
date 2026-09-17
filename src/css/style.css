@@ -146,3 +146,114 @@ button {
     background: #374151;
     color: white;
 }
+/* ---------- Weekly Summary ---------- */
+
+.weekly-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.weekly-row:last-child {
+    border-bottom: none;
+}
+/* ---------- History ---------- */
+
+.history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 12px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.history-row:last-child {
+    border-bottom: none;
+}
+
+.history-date {
+    font-weight: 500;
+}
+
+.history-score {
+    font-weight: 600;
+}
+/* ---------- Monthly Summary ---------- */
+
+.monthly-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.monthly-row:last-child {
+    border-bottom: none;
+}
+/* ---------- History ---------- */
+
+.history-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 14px 0;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.history-row:last-child {
+    border-bottom: none;
+}
+
+.history-date {
+    color: #1f2937;
+}
+
+.history-score {
+    font-weight: 600;
+}
+/* ---------- History Details ---------- */
+
+.history-row {
+    cursor: pointer;
+    transition: background-color 0.15s ease;
+}
+
+.history-row:hover {
+    background-color: #f8fafc;
+}
+
+.history-details {
+    margin: 0 0 8px 0;
+    padding: 8px 16px;
+    background-color: #f8fafc;
+    border-radius: 6px;
+}
+
+.history-detail-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+
+    padding: 8px 0;
+
+    font-size: 14px;
+
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.history-detail-row:last-child {
+    border-bottom: none;
+}
+
+.history-detail-row span:last-child {
+    font-weight: 600;
+}
