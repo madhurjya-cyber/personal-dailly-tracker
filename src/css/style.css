@@ -1,0 +1,118 @@
+/* ---------- Base ---------- */
+
+* {
+    box-sizing: border-box;
+}
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #f4f6f8;
+    color: #1f2937;
+}
+
+/* ---------- Header ---------- */
+
+.app-header {
+    background-color: #1f2937;
+    color: white;
+    padding: 24px 40px;
+}
+
+.app-header h1 {
+    margin: 0;
+    font-size: 32px;
+}
+
+.app-header p {
+    margin: 6px 0 0;
+    color: #d1d5db;
+}
+
+/* ---------- Main Container ---------- */
+
+.container {
+    width: 90%;
+    max-width: 900px;
+    margin: 40px auto;
+}
+
+/* ---------- Sections ---------- */
+
+section {
+    background-color: white;
+    padding: 24px;
+    margin-bottom: 24px;
+    border-radius: 12px;
+}
+
+/* ---------- Section Headers ---------- */
+
+.section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+h2 {
+    margin-top: 0;
+}
+
+/* ---------- Buttons ---------- */
+
+button {
+    border: none;
+    border-radius: 6px;
+    padding: 10px 16px;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+#add-activity-btn {
+    background-color: #2563eb;
+    color: white;
+}
+
+#add-activity-btn:hover {
+    background-color: #1d4ed8;
+}
+
+/* ---------- Score ---------- */
+
+.score-section {
+    text-align: center;
+}
+
+.score-display {
+    font-size: 42px;
+    font-weight: bold;
+    margin: 20px 0 10px;
+}
+
+#score-percentage {
+    font-size: 20px;
+    font-weight: bold;
+}
+/* ---------- Activity Rows ---------- */
+
+.activity-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 14px 0;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.activity-row span:first-child {
+    flex: 1;
+    font-size: 16px;
+}
+
+.activity-row input {
+    width: 70px;
+    padding: 8px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    font-size: 16px;
+    text-align: center;
+}
