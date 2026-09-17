@@ -3,8 +3,20 @@
 const SCORE_STORAGE_KEY = "dailyscore-data";
 const ACTIVITY_STORAGE_KEY = "dailyscore-activities";
 
-const today = new Date();
-const todayKey = today.toISOString().split("T")[0];
+function getTodayKey() {
+
+    const date = new Date();
+
+    return (
+        date.getFullYear() +
+        "-" +
+        String(date.getMonth() + 1).padStart(2, "0") +
+        "-" +
+        String(date.getDate()).padStart(2, "0")
+    );
+}
+
+let todayKey = getTodayKey();
 
 
 // ---------- Storage Functions ----------
@@ -325,7 +337,7 @@ const dateElement =
     document.getElementById("current-date");
 
 dateElement.textContent =
-    today.toLocaleDateString("en-IN", {
+    new Date().toLocaleDateString("en-IN", {
         weekday: "long",
         year: "numeric",
         month: "long",
@@ -337,3 +349,30 @@ dateElement.textContent =
 
 renderActivities();
 calculateDailyScore();
+// ---------- New Day Detection ----------
+
+setInterval(function () {
+
+    const currentKey = getTodayKey();
+
+    if (currentKey !== todayKey) {
+
+        todayKey = currentKey;
+
+        // Update displayed date
+        dateElement.textContent =
+            new Date().toLocaleDateString("en-IN", {
+                weekday: "long",
+                year: "numeric",
+                month: "long",
+                day: "numeric"
+            });
+
+        // Rebuild today's tracker
+        renderActivities();
+
+        // Calculate the new day's score
+        calculateDailyScore();
+    }
+
+}, 60000);
