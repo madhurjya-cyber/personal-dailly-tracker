@@ -257,3 +257,35 @@ button {
 .history-detail-row span:last-child {
     font-weight: 600;
 }
+
+.history-edit-btn,
+.history-details button {
+    padding: 5px 12px;
+    border: 1px solid #64748b;
+    border-radius: 5px;
+    background: white;
+    color: #1f2937;
+    cursor: pointer;
+}
+
+.history-edit-btn:hover,
+.history-details button:hover {
+    background: #e5e7eb;
+}
+
+.history-details input {
+    width: 65px;
+    padding: 5px;
+    border: 1px solid #cbd5e1;
+    border-radius: 5px;
+}
+
+.history-details button {
+    margin: 10px 8px 0 0;
+}
+
+.history-details button:first-of-type {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}

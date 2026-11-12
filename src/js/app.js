@@ -380,6 +380,7 @@ setInterval(function () {
 
 // ---------- History ----------
 
+
 function renderHistory() {
     const historyList = document.getElementById("history-list");
 
@@ -415,18 +416,12 @@ function renderHistory() {
             ? Math.round((totalScore / maximumScore) * 100)
             : 0;
 
-
-        // ---------- History row ----------
-
+        // History row
         const row = document.createElement("div");
-
         row.classList.add("history-row");
 
-
         // Date
-
         const dateElement = document.createElement("span");
-
         dateElement.classList.add("history-date");
 
         const dateObject = new Date(date + "T00:00:00");
@@ -438,85 +433,158 @@ function renderHistory() {
             day: "numeric"
         });
 
-
         // Score
-
         const scoreElement = document.createElement("span");
-
         scoreElement.classList.add("history-score");
 
         scoreElement.textContent =
             `${totalScore} / ${maximumScore} (${percentage}%)`;
 
+        // Edit button
+        const editButton = document.createElement("button");
+        editButton.textContent = "Edit";
+        editButton.classList.add("history-edit-btn");
 
         row.appendChild(dateElement);
         row.appendChild(scoreElement);
+        row.appendChild(editButton);
 
-
-        // ---------- Details ----------
-
+        // Details section
         const details = document.createElement("div");
-
         details.classList.add("history-details");
-
         details.style.display = "none";
 
+        const editInputs = [];
 
-        // Add activity scores
+        // Show recorded activities, including inactive ones
+        activities.forEach(function (activity) {
 
-        activities
-            .filter(function (activity) {
-                return activity.active;
-            })
-            .forEach(function (activity) {
-
-                const activityScore = dailyScores[activity.id];
-
-                if (activityScore === undefined) {
-                    return;
-                }
-
-                const detailRow = document.createElement("div");
-
-                detailRow.classList.add("history-detail-row");
-
-
-                const name = document.createElement("span");
-
-                name.textContent = activity.name;
-
-
-                const score = document.createElement("span");
-
-                score.textContent = `${activityScore} / 10`;
-
-
-                detailRow.appendChild(name);
-                detailRow.appendChild(score);
-
-                details.appendChild(detailRow);
-            });
-
-
-        // ---------- Expand / Collapse ----------
-
-        row.addEventListener("click", function () {
-
-            if (details.style.display === "none") {
-                details.style.display = "block";
-            } else {
-                details.style.display = "none";
+            if (!Object.prototype.hasOwnProperty.call(
+                dailyScores, activity.id
+            )) {
+                return;
             }
 
+            const detailRow = document.createElement("div");
+            detailRow.classList.add("history-detail-row");
+
+            const name = document.createElement("span");
+            name.textContent = activity.name;
+
+            const score = document.createElement("span");
+            score.textContent = `${dailyScores[activity.id]} / 10`;
+
+            const input = document.createElement("input");
+            input.type = "number";
+            input.min = "0";
+            input.max = "10";
+            input.step = "1";
+            input.value = dailyScores[activity.id];
+            input.style.display = "none";
+
+            editInputs.push({
+                id: activity.id,
+                input: input
+            });
+
+            detailRow.appendChild(name);
+            detailRow.appendChild(score);
+            detailRow.appendChild(input);
+
+            details.appendChild(detailRow);
+
+            // Keep references for editing
+            input.dataset.scoreElement = "true";
+            score.dataset.scoreElement = "true";
         });
 
+        // Save button
+        const saveButton = document.createElement("button");
+        saveButton.textContent = "Save";
+        saveButton.style.display = "none";
+
+        // Cancel button
+        const cancelButton = document.createElement("button");
+        cancelButton.textContent = "Cancel";
+        cancelButton.style.display = "none";
+
+        details.appendChild(saveButton);
+        details.appendChild(cancelButton);
+
+        // Expand / Collapse
+        row.addEventListener("click", function (event) {
+
+            if (event.target === editButton) {
+                return;
+            }
+
+            details.style.display =
+                details.style.display === "none" ? "block" : "none";
+        });
+
+        // Enter edit mode
+        editButton.addEventListener("click", function (event) {
+
+            event.stopPropagation();
+
+            details.style.display = "block";
+
+            editInputs.forEach(function (item) {
+                const detailRow = item.input.parentElement;
+
+                detailRow.querySelector(
+                    'span[data-score-element="true"]:last-of-type'
+                ).style.display = "none";
+
+                item.input.style.display = "inline-block";
+            });
+
+            editButton.style.display = "none";
+            saveButton.style.display = "inline-block";
+            cancelButton.style.display = "inline-block";
+        });
+
+        // Save historical scores
+        saveButton.addEventListener("click", function () {
+
+            for (const item of editInputs) {
+                const value = item.input.value;
+
+                if (
+                    value === "" ||
+                    !Number.isInteger(Number(value)) ||
+                    Number(value) < 0 ||
+                    Number(value) > 10
+                ) {
+                    alert("Scores must be whole numbers between 0 and 10.");
+                    return;
+                }
+            }
+
+            editInputs.forEach(function (item) {
+                dailyScores[item.id] = Number(item.input.value);
+            });
+
+            saveScores(scores);
+
+            renderHistory();
+            renderWeeklySummary();
+            renderMonthlySummary();
+        });
+
+        // Cancel editing
+        cancelButton.addEventListener("click", function () {
+            renderHistory();
+        });
 
         historyList.appendChild(row);
         historyList.appendChild(details);
 
     });
 }
-renderHistory()
+
+renderHistory();
+
 // ---------- Weekly Summary ----------
 
 function renderWeeklySummary() {
