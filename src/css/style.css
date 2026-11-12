@@ -289,3 +289,37 @@ button {
     color: white;
     border-color: #2563eb;
 }
+
+/* ---------- Chart Filters ---------- */
+
+.chart-filters {
+    display: flex;
+    gap: 10px;
+    margin: 20px 0;
+    flex-wrap: wrap;
+}
+
+.chart-filter {
+    padding: 8px 16px;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: white;
+    color: #374151;
+    cursor: pointer;
+}
+
+.chart-filter:hover {
+    background: #f3f4f6;
+}
+
+.chart-filter.active {
+    background: #2563eb;
+    color: white;
+    border-color: #2563eb;
+}
+
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 300px;
+}

@@ -2,6 +2,7 @@
 
 const SCORE_STORAGE_KEY = "dailyscore-data";
 let dailyChart = null;
+let selectedChartRange = "7";
 const ACTIVITY_STORAGE_KEY = "dailyscore-activities";
 
 function getTodayKey() {
@@ -844,8 +845,19 @@ function renderDailyChart() {
 
     const scores = loadScores();
 
-    const dates = Object.keys(scores)
-        .sort();
+    let dates = Object.keys(scores).sort();
+    const today = new Date();
+const cutoff = new Date(today);
+
+cutoff.setHours(0, 0, 0, 0);
+
+if (selectedChartRange !== "all") {
+    cutoff.setDate(cutoff.getDate() - (Number(selectedChartRange) - 1));
+
+    dates = dates.filter(function(date) {
+        return new Date(date + "T00:00:00") >= cutoff;
+    });
+}
 
     const labels = [];
     const dailyPercentages = [];
@@ -904,7 +916,7 @@ labels.push(formattedDate);
                 backgroundColor: "rgba(37, 99, 235, 0.1)",
 
                 borderWidth: 2,
-                tension: 0.3,
+                tension: 0,
                 fill: true
             }]
         },
@@ -935,5 +947,21 @@ labels.push(formattedDate);
 
     });
 }
+document.querySelectorAll(".chart-filter").forEach(function(button) {
 
+    button.addEventListener("click", function() {
+
+        selectedChartRange = button.dataset.range;
+
+        document.querySelectorAll(".chart-filter").forEach(function(btn) {
+            btn.classList.remove("active");
+        });
+
+        button.classList.add("active");
+
+        renderDailyChart();
+
+    });
+
+});
 renderDailyChart();
