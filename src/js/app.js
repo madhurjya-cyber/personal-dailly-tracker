@@ -1,6 +1,7 @@
 // ---------- Storage ----------
 
 const SCORE_STORAGE_KEY = "dailyscore-data";
+let dailyChart = null;
 const ACTIVITY_STORAGE_KEY = "dailyscore-activities";
 
 function getTodayKey() {
@@ -328,6 +329,7 @@ function calculateDailyScore() {
 
     document.getElementById("score-percentage").textContent =
         percentage + "%";
+    renderDailyChart();
 }
 
 
@@ -567,9 +569,11 @@ function renderHistory() {
 
             saveScores(scores);
 
-            renderHistory();
-            renderWeeklySummary();
-            renderMonthlySummary();
+       // Refresh all analytics
+        renderHistory();
+        renderWeeklySummary();
+        renderMonthlySummary();
+        renderDailyChart();
         });
 
         // Cancel editing
@@ -830,3 +834,106 @@ function renderMonthlySummary() {
 }
 
 renderMonthlySummary();
+
+
+// ---------- Daily Performance Chart ----------
+
+
+
+function renderDailyChart() {
+
+    const scores = loadScores();
+
+    const dates = Object.keys(scores)
+        .sort();
+
+    const labels = [];
+    const dailyPercentages = [];
+
+    dates.forEach(function (date) {
+
+        const dailyScores = scores[date];
+
+        let totalScore = 0;
+        let maximumScore = 0;
+
+        Object.values(dailyScores).forEach(function (score) {
+            totalScore += Number(score);
+            maximumScore += 10;
+        });
+
+        const percentage = maximumScore > 0
+            ? Math.round((totalScore / maximumScore) * 100)
+            : 0;
+
+        const dateObject = new Date(date + "T00:00:00");
+
+const formattedDate = dateObject.toLocaleDateString("en-IN", {
+    day: "numeric",
+    month: "short"
+});
+
+labels.push(formattedDate);
+
+        dailyPercentages.push(percentage);
+
+    });
+
+    const ctx = document.getElementById("daily-chart");
+
+    if (!ctx || typeof Chart === "undefined") {
+        return;
+    }
+
+    if (dailyChart !== null) {
+        dailyChart.destroy();
+    }
+
+    dailyChart = new Chart(ctx, {
+
+        type: "line",
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                label: "Daily Performance (%)",
+                data: dailyPercentages,
+
+                borderColor: "#2563eb",
+                backgroundColor: "rgba(37, 99, 235, 0.1)",
+
+                borderWidth: 2,
+                tension: 0.3,
+                fill: true
+            }]
+        },
+
+        options: {
+            responsive: true,
+
+            maintainAspectRatio: false,
+
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: 100,
+                    title: {
+                        display: true,
+                        text: "Performance (%)"
+                    }
+                },
+
+                x: {
+                    title: {
+                        display: true,
+                        text: "Date"
+                    }
+                }
+            }
+        }
+
+    });
+}
+
+renderDailyChart();
