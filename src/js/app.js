@@ -107,10 +107,15 @@ let activities = loadActivities();
 const activityList =
     document.getElementById("activity-list");
 
+
+
 function renderActivities() {
 
-    // Clear the existing activity rows
+    // Clear existing activity rows
     activityList.innerHTML = "";
+
+    const scores = loadScores();
+    const todayScores = scores[todayKey] || {};
 
     activities
         .filter(function (activity) {
@@ -118,124 +123,100 @@ function renderActivities() {
         })
         .forEach(function (activity) {
 
-            const activityRow =
-                document.createElement("div");
-
+            const activityRow = document.createElement("div");
             activityRow.classList.add("activity-row");
 
-            activityRow.dataset.activityId =
-                activity.id;
+            // Assign unique activity ID
+            activityRow.dataset.activityId = activity.id;
 
-            const activityName =
-                document.createElement("span");
+            // Activity name
+            const activityName = document.createElement("span");
+            activityName.textContent = activity.name;
+            activityName.classList.add("activity-name");
 
-            activityName.textContent =
-                activity.name;
+            // Checkbox
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.classList.add("activity-checkbox");
 
-            const scoreInput =
-                document.createElement("input");
+            checkbox.checked = todayScores[activity.id] === true;
 
-            scoreInput.type = "number";
-            scoreInput.min = "0";
-            scoreInput.max = "10";
+            // Apply completed styling
+            if (checkbox.checked) {
+                activityRow.classList.add("completed");
+            }
 
-            // Load today's saved score
-            const scores = loadScores();
+            checkbox.addEventListener("change", function () {
 
-            const savedScore =
-                scores[todayKey]?.[activity.id];
+                if (checkbox.checked) {
+                    activityRow.classList.add("completed");
+                } else {
+                    activityRow.classList.remove("completed");
+                }
 
-            scoreInput.value =
-                savedScore ?? 0;
+                calculateDailyScore();
+            });
 
-            scoreInput.addEventListener(
-                "input",
-                calculateDailyScore
-            );
+            // Rename button
+            const renameButton = document.createElement("button");
+            renameButton.textContent = "Rename";
+            renameButton.classList.add("rename-btn");
 
-           const maxScore =
-    document.createElement("span");
+            renameButton.addEventListener("click", function () {
 
-maxScore.textContent = "/ 10";
+                const newName = prompt(
+                    "Enter new activity name:",
+                    activity.name
+                );
 
-// ---------- Rename Button ----------
+                if (newName === null) return;
 
-const renameButton =
-    document.createElement("button");
+                const cleanedName = newName.trim();
 
-renameButton.textContent = "Rename";
-renameButton.classList.add("rename-btn");
+                if (cleanedName === "") {
+                    alert("Activity name cannot be empty.");
+                    return;
+                }
 
-renameButton.addEventListener("click", function () {
+                activity.name = cleanedName;
 
-    const newName =
-        prompt("Enter new activity name:", activity.name);
+                saveActivities();
+                renderActivities();
+                calculateDailyScore();
+            });
 
-    if (newName === null) {
-        return;
-    }
+            // Remove button
+            const removeButton = document.createElement("button");
+            removeButton.textContent = "Remove";
+            removeButton.classList.add("remove-btn");
 
-    const cleanedName =
-        newName.trim();
+            removeButton.addEventListener("click", function () {
 
-    if (cleanedName === "") {
-        alert("Activity name cannot be empty.");
-        return;
-    }
+                const confirmed = confirm(
+                    `Remove "${activity.name}" from your tracker?`
+                );
 
-    // Change only the display name
-    activity.name = cleanedName;
+                if (!confirmed) return;
 
-    // Keep the same activity ID
-    saveActivities();
+                activity.active = false;
 
-    // Redraw the activity list
-    renderActivities();
+                saveActivities();
+                renderActivities();
+                calculateDailyScore();
+            });
 
-    // Recalculate today's score
-    calculateDailyScore();
-});
+            // Assemble activity row
+            activityRow.appendChild(checkbox);
+            activityRow.appendChild(activityName);
+            activityRow.appendChild(renameButton);
+            activityRow.appendChild(removeButton);
 
-// ---------- Remove Button ----------
+            activityList.appendChild(activityRow);
 
-const removeButton =
-    document.createElement("button");
-
-removeButton.textContent = "Remove";
-removeButton.classList.add("remove-btn");
-
-removeButton.addEventListener("click", function () {
-
-    const confirmed =
-        confirm(`Remove "${activity.name}" from your tracker?`);
-
-    if (!confirmed) {
-        return;
-    }
-
-    // Deactivate instead of deleting
-    activity.active = false;
-
-    // Save the updated activity configuration
-    saveActivities();
-
-    // Redraw the activity list
-    renderActivities();
-
-    // Recalculate today's score
-    calculateDailyScore();
-});
-
-
-activityRow.appendChild(activityName);
-activityRow.appendChild(scoreInput);
-activityRow.appendChild(maxScore);
-activityRow.appendChild(renameButton);
-activityRow.appendChild(removeButton);
-
-activityList.appendChild(activityRow);
         });
 }
+
+
 
 
 // ---------- Add Activity ----------
@@ -281,17 +262,13 @@ addActivityButton.addEventListener(
 
 // ---------- Daily Score ----------
 
+
+
+
 function calculateDailyScore() {
-
-    const scoreInputs =
-        document.querySelectorAll(
-            ".activity-row input"
-        );
-
-    let totalScore = 0;
-
-    const maximumScore =
-        scoreInputs.length * 10;
+    const checkboxes = document.querySelectorAll(".activity-checkbox");
+    let completedActivities = 0;
+    const totalActivities = checkboxes.length;
 
     const scores = loadScores();
 
@@ -299,107 +276,86 @@ function calculateDailyScore() {
         scores[todayKey] = {};
     }
 
-    scoreInputs.forEach(function (input) {
+    checkboxes.forEach(function (checkbox) {
+        const activityId = checkbox.closest(".activity-row").dataset.activityId;
+        const isCompleted = checkbox.checked;
 
-        const activityId =
-            input.parentElement.dataset.activityId;
+        scores[todayKey][activityId] = isCompleted;
 
-        const score =
-            Number(input.value);
-
-        totalScore += score;
-
-        scores[todayKey][activityId] =
-            score;
+        if (isCompleted) {
+            completedActivities++;
+        }
     });
 
     saveScores(scores);
 
-    const percentage =
-        maximumScore > 0
-            ? Math.round(
-                (totalScore / maximumScore) * 100
-            )
-            : 0;
+    const percentage = totalActivities > 0
+        ? Math.round((completedActivities / totalActivities) * 100)
+        : 0;
 
-    document.getElementById("score").textContent =
-        totalScore;
+    document.getElementById("score").textContent = completedActivities;
+    document.getElementById("max-score").textContent = totalActivities;
+    document.getElementById("score-percentage").textContent = percentage + "%";
 
-    document.getElementById("max-score").textContent =
-        maximumScore;
+    const progressRing = document.getElementById("progress-ring");
+    const ringPercentage = document.getElementById("ring-percentage");
 
-    document.getElementById("score-percentage").textContent =
-        percentage + "%";
+    if (progressRing && ringPercentage) {
+        const start = Number(progressRing.dataset.progress || 0);
+        const end = percentage * 3.6;
+        const duration = 800;
+        const startTime = performance.now();
+
+        function animateRing(currentTime) {
+            const elapsed = currentTime - startTime;
+            const progress = Math.min(elapsed / duration, 1);
+
+            // Smooth ease-out movement
+            const easedProgress = 1 - Math.pow(1 - progress, 3);
+
+            const current = start + (end - start) * easedProgress;
+
+            progressRing.style.setProperty("--progress", current + "deg");
+
+            if (progress < 1) {
+                requestAnimationFrame(animateRing);
+            } else {
+                progressRing.dataset.progress = end;
+            }
+        }
+
+        requestAnimationFrame(animateRing);
+        ringPercentage.textContent = percentage + "%";
+    }
+
     renderDailyChart();
 }
 
 
-// ---------- Today's Date ----------
-
-const dateElement =
-    document.getElementById("current-date");
-
-dateElement.textContent =
-    new Date().toLocaleDateString("en-IN", {
-        weekday: "long",
-        year: "numeric",
-        month: "long",
-        day: "numeric"
-    });
-
-
-// ---------- Initial Load ----------
-
-renderActivities();
-calculateDailyScore();
-// ---------- New Day Detection ----------
-
-setInterval(function () {
-
-    const currentKey = getTodayKey();
-
-    if (currentKey !== todayKey) {
-
-        todayKey = currentKey;
-
-        // Update displayed date
-        dateElement.textContent =
-            new Date().toLocaleDateString("en-IN", {
-                weekday: "long",
-                year: "numeric",
-                month: "long",
-                day: "numeric"
-            });
-
-        // Rebuild today's tracker
-        renderActivities();
-
-        // Calculate the new day's score
-        calculateDailyScore();
-    }
-
-}, 60000);
 // ---------- History ----------
 
-// ---------- History ----------
 
+
+
+// ---------- History ----------
 
 function renderHistory() {
-    const historyList = document.getElementById("history-list");
+
+    const historyList =
+        document.getElementById("history-list");
 
     const scores = loadScores();
 
     const dates = Object.keys(scores)
-        .filter(function (date) {
-            return date !== todayKey;
-        })
+        .filter(date => date !== todayKey)
         .sort()
         .reverse();
 
     historyList.innerHTML = "";
 
     if (dates.length === 0) {
-        historyList.innerHTML = "<p>No previous days recorded yet.</p>";
+        historyList.innerHTML =
+            "<p>No previous days recorded yet.</p>";
         return;
     }
 
@@ -407,43 +363,42 @@ function renderHistory() {
 
         const dailyScores = scores[date];
 
-        let totalScore = 0;
-        let maximumScore = 0;
+        const activityValues = Object.values(dailyScores);
 
-        Object.values(dailyScores).forEach(function (score) {
-            totalScore += Number(score);
-            maximumScore += 10;
-        });
+        const completed = activityValues.filter(
+            value => value === true
+        ).length;
 
-        const percentage = maximumScore > 0
-            ? Math.round((totalScore / maximumScore) * 100)
+        const total = activityValues.length;
+
+        const percentage = total > 0
+            ? Math.round((completed / total) * 100)
             : 0;
 
-        // History row
+        // ---------- History Row ----------
+
         const row = document.createElement("div");
         row.classList.add("history-row");
 
-        // Date
         const dateElement = document.createElement("span");
         dateElement.classList.add("history-date");
 
         const dateObject = new Date(date + "T00:00:00");
 
-        dateElement.textContent = dateObject.toLocaleDateString("en-IN", {
-            weekday: "short",
-            year: "numeric",
-            month: "short",
-            day: "numeric"
-        });
+        dateElement.textContent =
+            dateObject.toLocaleDateString("en-IN", {
+                weekday: "short",
+                year: "numeric",
+                month: "short",
+                day: "numeric"
+            });
 
-        // Score
         const scoreElement = document.createElement("span");
         scoreElement.classList.add("history-score");
 
         scoreElement.textContent =
-            `${totalScore} / ${maximumScore} (${percentage}%)`;
+            `${completed} / ${total} (${percentage}%)`;
 
-        // Edit button
         const editButton = document.createElement("button");
         editButton.textContent = "Edit";
         editButton.classList.add("history-edit-btn");
@@ -452,14 +407,14 @@ function renderHistory() {
         row.appendChild(scoreElement);
         row.appendChild(editButton);
 
-        // Details section
+        // ---------- Activity Details ----------
+
         const details = document.createElement("div");
         details.classList.add("history-details");
         details.style.display = "none";
 
         const editInputs = [];
 
-        // Show recorded activities, including inactive ones
         activities.forEach(function (activity) {
 
             if (!Object.prototype.hasOwnProperty.call(
@@ -474,39 +429,29 @@ function renderHistory() {
             const name = document.createElement("span");
             name.textContent = activity.name;
 
-            const score = document.createElement("span");
-            score.textContent = `${dailyScores[activity.id]} / 10`;
-
-            const input = document.createElement("input");
-            input.type = "number";
-            input.min = "0";
-            input.max = "10";
-            input.step = "1";
-            input.value = dailyScores[activity.id];
-            input.style.display = "none";
+            const checkbox = document.createElement("input");
+            checkbox.type = "checkbox";
+            checkbox.checked = dailyScores[activity.id] === true;
+            checkbox.disabled = true;
 
             editInputs.push({
                 id: activity.id,
-                input: input
+                checkbox: checkbox
             });
 
             detailRow.appendChild(name);
-            detailRow.appendChild(score);
-            detailRow.appendChild(input);
+            detailRow.appendChild(checkbox);
 
             details.appendChild(detailRow);
 
-            // Keep references for editing
-            input.dataset.scoreElement = "true";
-            score.dataset.scoreElement = "true";
         });
 
-        // Save button
+        // ---------- Save and Cancel Buttons ----------
+
         const saveButton = document.createElement("button");
         saveButton.textContent = "Save";
         saveButton.style.display = "none";
 
-        // Cancel button
         const cancelButton = document.createElement("button");
         cancelButton.textContent = "Cancel";
         cancelButton.style.display = "none";
@@ -514,7 +459,8 @@ function renderHistory() {
         details.appendChild(saveButton);
         details.appendChild(cancelButton);
 
-        // Expand / Collapse
+        // ---------- Expand / Collapse ----------
+
         row.addEventListener("click", function (event) {
 
             if (event.target === editButton) {
@@ -522,10 +468,14 @@ function renderHistory() {
             }
 
             details.style.display =
-                details.style.display === "none" ? "block" : "none";
+                details.style.display === "none"
+                    ? "block"
+                    : "none";
+
         });
 
-        // Enter edit mode
+        // ---------- Enter Edit Mode ----------
+
         editButton.addEventListener("click", function (event) {
 
             event.stopPropagation();
@@ -533,167 +483,157 @@ function renderHistory() {
             details.style.display = "block";
 
             editInputs.forEach(function (item) {
-                const detailRow = item.input.parentElement;
-
-                detailRow.querySelector(
-                    'span[data-score-element="true"]:last-of-type'
-                ).style.display = "none";
-
-                item.input.style.display = "inline-block";
+                item.checkbox.disabled = false;
             });
 
             editButton.style.display = "none";
             saveButton.style.display = "inline-block";
             cancelButton.style.display = "inline-block";
+
         });
 
-        // Save historical scores
+        // ---------- Save Historical Changes ----------
+
         saveButton.addEventListener("click", function () {
 
-            for (const item of editInputs) {
-                const value = item.input.value;
-
-                if (
-                    value === "" ||
-                    !Number.isInteger(Number(value)) ||
-                    Number(value) < 0 ||
-                    Number(value) > 10
-                ) {
-                    alert("Scores must be whole numbers between 0 and 10.");
-                    return;
-                }
-            }
-
             editInputs.forEach(function (item) {
-                dailyScores[item.id] = Number(item.input.value);
+
+                dailyScores[item.id] =
+                    item.checkbox.checked;
+
             });
 
             saveScores(scores);
 
-       // Refresh all analytics
-        renderHistory();
-        renderWeeklySummary();
-        renderMonthlySummary();
-        renderDailyChart();
+            // Refresh all analytics
+            renderHistory();
+            renderWeeklySummary();
+            renderMonthlySummary();
+            renderDailyChart();
+
         });
 
-        // Cancel editing
+        // ---------- Cancel Editing ----------
+
         cancelButton.addEventListener("click", function () {
+
             renderHistory();
+
         });
 
         historyList.appendChild(row);
         historyList.appendChild(details);
 
     });
+
 }
 
-renderHistory();
 
 // ---------- Weekly Summary ----------
+
+
+
 
 function renderWeeklySummary() {
 
     const weeklySummary =
         document.getElementById("weekly-summary");
 
-    const scores =
-        loadScores();
+    const scores = loadScores();
 
-    const today =
-        new Date();
+    const today = new Date();
 
     // Find Monday of the current week
+    const day = today.getDay();
 
-    const day =
-        today.getDay();
+    const difference = day === 0 ? 6 : day - 1;
 
-    const difference =
-        day === 0 ? 6 : day - 1;
+    const monday = new Date(today);
 
-    const monday =
-        new Date(today);
-
-    monday.setDate(
-        today.getDate() - difference
-    );
-
+    monday.setDate(today.getDate() - difference);
     monday.setHours(0, 0, 0, 0);
 
+    // Find Sunday
+    const sunday = new Date(monday);
 
-    // Find Sunday of the current week
-
-    const sunday =
-        new Date(monday);
-
-    sunday.setDate(
-        monday.getDate() + 6
-    );
-
+    sunday.setDate(monday.getDate() + 6);
     sunday.setHours(23, 59, 59, 999);
 
-
-    let totalScore = 0;
-    let maximumScore = 0;
+    let totalCompleted = 0;
+    let totalActivities = 0;
     let daysRecorded = 0;
 
+    let bestDay = "N/A";
+    let bestDayPercentage = -1;
 
-    // Check every stored date
+    const dailyPercentages = [];
 
     Object.keys(scores).forEach(function (date) {
 
-        const dateObject =
-            new Date(date + "T00:00:00");
+        const dateObject = new Date(date + "T00:00:00");
 
-        if (
-            dateObject >= monday &&
-            dateObject <= sunday
-        ) {
+        if (dateObject < monday || dateObject > sunday) {
+            return;
+        }
 
-            const dailyScores =
-                scores[date];
+        const dailyScores = scores[date];
+        const activityValues = Object.values(dailyScores);
 
-            Object.values(dailyScores).forEach(
-                function (score) {
+        const completed = activityValues.filter(
+            value => value === true
+        ).length;
 
-                    totalScore +=
-                        Number(score);
+        const maximum = activityValues.length;
 
-                    maximumScore += 10;
+        if (maximum === 0) return;
 
-                }
-            );
+        const dayPercentage =
+            Math.round((completed / maximum) * 100);
 
-            daysRecorded++;
+        totalCompleted += completed;
+        totalActivities += maximum;
+
+        daysRecorded++;
+
+        dailyPercentages.push(dayPercentage);
+
+        if (dayPercentage > bestDayPercentage) {
+
+            bestDayPercentage = dayPercentage;
+
+            bestDay = dateObject.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short"
+            });
 
         }
 
     });
 
+    const completion =
+        totalActivities > 0
+            ? Math.round((totalCompleted / totalActivities) * 100)
+            : 0;
 
-    const percentage =
-        maximumScore > 0
+    const averagePerformance =
+        dailyPercentages.length > 0
             ? Math.round(
-                (totalScore / maximumScore) * 100
+                dailyPercentages.reduce(
+                    (sum, value) => sum + value, 0
+                ) / dailyPercentages.length
             )
             : 0;
 
+    const startDate = monday.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short"
+    });
 
-    // Format dates
-
-    const startDate =
-        monday.toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short"
-        });
-
-    const endDate =
-        sunday.toLocaleDateString("en-IN", {
-            day: "numeric",
-            month: "short",
-            year: "numeric"
-        });
-
+    const endDate = sunday.toLocaleDateString("en-IN", {
+        day: "numeric",
+        month: "short",
+        year: "numeric"
+    });
 
     weeklySummary.innerHTML = `
 
@@ -703,105 +643,124 @@ function renderWeeklySummary() {
         </div>
 
         <div class="weekly-row">
-            <span>Total Score</span>
-            <strong>
-                ${totalScore} / ${maximumScore}
-            </strong>
+            <span>Activities Completed</span>
+            <strong>${totalCompleted} / ${totalActivities}</strong>
         </div>
 
         <div class="weekly-row">
             <span>Completion</span>
-            <strong>
-                ${percentage}%
-            </strong>
+            <strong>${completion}%</strong>
         </div>
 
         <div class="weekly-row">
             <span>Days Recorded</span>
+            <strong>${daysRecorded} / 7</strong>
+        </div>
+
+        <div class="weekly-row">
+            <span>Average Performance</span>
+            <strong>${averagePerformance}%</strong>
+        </div>
+
+        <div class="weekly-row">
+            <span>Best Day</span>
             <strong>
-                ${daysRecorded} / 7
+                ${bestDay} (${bestDayPercentage < 0 ? 0 : bestDayPercentage}%)
             </strong>
         </div>
 
     `;
+
 }
 
-renderWeeklySummary();
 // ---------- Monthly Summary ----------
+
+
 
 function renderMonthlySummary() {
 
     const monthlySummary =
         document.getElementById("monthly-summary");
 
-    const scores =
-        loadScores();
+    const scores = loadScores();
 
-    const today =
-        new Date();
+    const today = new Date();
 
-    const currentYear =
-        today.getFullYear();
+    const currentMonth = today.getMonth();
+    const currentYear = today.getFullYear();
 
-    const currentMonth =
-        today.getMonth();
-
-
-    let totalScore = 0;
-    let maximumScore = 0;
+    let totalCompleted = 0;
+    let totalActivities = 0;
     let daysRecorded = 0;
 
+    let bestDay = "N/A";
+    let bestDayPercentage = -1;
 
-    // Check every stored date
+    const dailyPercentages = [];
 
     Object.keys(scores).forEach(function (date) {
 
-        const dateObject =
-            new Date(date + "T00:00:00");
+        const dateObject = new Date(date + "T00:00:00");
 
-        const sameYear =
-            dateObject.getFullYear() === currentYear;
+        if (
+            dateObject.getMonth() !== currentMonth ||
+            dateObject.getFullYear() !== currentYear
+        ) {
+            return;
+        }
 
-        const sameMonth =
-            dateObject.getMonth() === currentMonth;
+        const dailyScores = scores[date];
+        const activityValues = Object.values(dailyScores);
 
+        const completed = activityValues.filter(
+            value => value === true
+        ).length;
 
-        if (sameYear && sameMonth) {
+        const maximum = activityValues.length;
 
-            const dailyScores =
-                scores[date];
+        if (maximum === 0) return;
 
-            Object.values(dailyScores).forEach(
-                function (score) {
+        const dayPercentage =
+            Math.round((completed / maximum) * 100);
 
-                    totalScore +=
-                        Number(score);
+        totalCompleted += completed;
+        totalActivities += maximum;
 
-                    maximumScore += 10;
+        daysRecorded++;
 
-                }
-            );
+        dailyPercentages.push(dayPercentage);
 
-            daysRecorded++;
+        if (dayPercentage > bestDayPercentage) {
+
+            bestDayPercentage = dayPercentage;
+
+            bestDay = dateObject.toLocaleDateString("en-IN", {
+                day: "numeric",
+                month: "short"
+            });
+
         }
 
     });
 
+    const completion =
+        totalActivities > 0
+            ? Math.round((totalCompleted / totalActivities) * 100)
+            : 0;
 
-    const percentage =
-        maximumScore > 0
+    const averagePerformance =
+        dailyPercentages.length > 0
             ? Math.round(
-                (totalScore / maximumScore) * 100
+                dailyPercentages.reduce(
+                    (sum, value) => sum + value, 0
+                ) / dailyPercentages.length
             )
             : 0;
 
-
-    const monthName =
-        today.toLocaleDateString("en-IN", {
-            month: "long",
-            year: "numeric"
-        });
-
+    const monthName = today.toLocaleDateString("en-IN", {
+        month: "long",
+        year: "numeric"
+    });
 
     monthlySummary.innerHTML = `
 
@@ -811,33 +770,40 @@ function renderMonthlySummary() {
         </div>
 
         <div class="monthly-row">
-            <span>Total Score</span>
-            <strong>
-                ${totalScore} / ${maximumScore}
-            </strong>
+            <span>Activities Completed</span>
+            <strong>${totalCompleted} / ${totalActivities}</strong>
         </div>
 
         <div class="monthly-row">
             <span>Completion</span>
-            <strong>
-                ${percentage}%
-            </strong>
+            <strong>${completion}%</strong>
         </div>
 
         <div class="monthly-row">
             <span>Days Recorded</span>
+            <strong>${daysRecorded}</strong>
+        </div>
+
+        <div class="monthly-row">
+            <span>Average Performance</span>
+            <strong>${averagePerformance}%</strong>
+        </div>
+
+        <div class="monthly-row">
+            <span>Best Day</span>
             <strong>
-                ${daysRecorded}
+                ${bestDay} (${bestDayPercentage < 0 ? 0 : bestDayPercentage}%)
             </strong>
         </div>
 
     `;
+
 }
 
-renderMonthlySummary();
 
 
 // ---------- Daily Performance Chart ----------
+
 
 
 
@@ -846,18 +812,23 @@ function renderDailyChart() {
     const scores = loadScores();
 
     let dates = Object.keys(scores).sort();
+
     const today = new Date();
-const cutoff = new Date(today);
+    const cutoff = new Date(today);
 
-cutoff.setHours(0, 0, 0, 0);
+    cutoff.setHours(0, 0, 0, 0);
 
-if (selectedChartRange !== "all") {
-    cutoff.setDate(cutoff.getDate() - (Number(selectedChartRange) - 1));
+    if (selectedChartRange !== "all") {
 
-    dates = dates.filter(function(date) {
-        return new Date(date + "T00:00:00") >= cutoff;
-    });
-}
+        cutoff.setDate(
+            cutoff.getDate() - (Number(selectedChartRange) - 1)
+        );
+
+        dates = dates.filter(function (date) {
+            return new Date(date + "T00:00:00") >= cutoff;
+        });
+
+    }
 
     const labels = [];
     const dailyPercentages = [];
@@ -865,28 +836,34 @@ if (selectedChartRange !== "all") {
     dates.forEach(function (date) {
 
         const dailyScores = scores[date];
+        const activityIds = Object.keys(dailyScores);
+
+        if (activityIds.length === 0) return;
 
         let totalScore = 0;
-        let maximumScore = 0;
 
-        Object.values(dailyScores).forEach(function (score) {
-            totalScore += Number(score);
-            maximumScore += 10;
+        activityIds.forEach(function (id) {
+
+            if (dailyScores[id] === true) {
+                totalScore++;
+            }
+
         });
 
-        const percentage = maximumScore > 0
-            ? Math.round((totalScore / maximumScore) * 100)
-            : 0;
+        const maximumScore = activityIds.length;
+
+        const percentage = Math.round(
+            (totalScore / maximumScore) * 100
+        );
 
         const dateObject = new Date(date + "T00:00:00");
 
-const formattedDate = dateObject.toLocaleDateString("en-IN", {
-    day: "numeric",
-    month: "short"
-});
+        const formattedDate = dateObject.toLocaleDateString("en-IN", {
+            day: "numeric",
+            month: "short"
+        });
 
-labels.push(formattedDate);
-
+        labels.push(formattedDate);
         dailyPercentages.push(percentage);
 
     });
@@ -909,7 +886,7 @@ labels.push(formattedDate);
             labels: labels,
 
             datasets: [{
-                label: "Daily Performance (%)",
+                label: "Daily Completion (%)",
                 data: dailyPercentages,
 
                 borderColor: "#2563eb",
@@ -922,17 +899,19 @@ labels.push(formattedDate);
         },
 
         options: {
-            responsive: true,
 
+            responsive: true,
             maintainAspectRatio: false,
 
             scales: {
+
                 y: {
                     beginAtZero: true,
                     max: 100,
+
                     title: {
                         display: true,
-                        text: "Performance (%)"
+                        text: "Completion (%)"
                     }
                 },
 
@@ -942,11 +921,15 @@ labels.push(formattedDate);
                         text: "Date"
                     }
                 }
+
             }
+
         }
 
     });
+
 }
+
 document.querySelectorAll(".chart-filter").forEach(function(button) {
 
     button.addEventListener("click", function() {
@@ -964,4 +947,123 @@ document.querySelectorAll(".chart-filter").forEach(function(button) {
     });
 
 });
-renderDailyChart();
+
+
+
+ // ---------- Application Initialization ----------
+
+const dateElement = document.getElementById("current-date");
+
+function updateDisplayedDate() {
+
+    dateElement.textContent = new Date().toLocaleDateString("en-IN", {
+        weekday: "long",
+        year: "numeric",
+        month: "long",
+        day: "numeric"
+    });
+
+}
+
+// Initial application load
+updateDisplayedDate();
+
+renderActivities();
+calculateDailyScore();
+
+renderHistory();
+renderWeeklySummary();
+renderMonthlySummary();
+
+// ---------- New Day Detection ----------
+
+setInterval(function () {
+
+    const currentKey = getTodayKey();
+
+    if (currentKey !== todayKey) {
+
+        todayKey = currentKey;
+
+        updateDisplayedDate();
+
+        renderActivities();
+        calculateDailyScore();
+
+        renderHistory();
+        renderWeeklySummary();
+        renderMonthlySummary();
+
+    }
+
+}, 60000);
+
+// ---------- Dashboard Dropdown Functionality ----------
+
+const dashboardSelect =
+    document.getElementById("dashboard-view-select");
+
+const dashboardPanels = {
+    analytics: document.getElementById("analytics-panel"),
+    weekly: document.getElementById("weekly-panel"),
+    monthly: document.getElementById("monthly-panel"),
+    history: document.getElementById("history-panel")
+};
+
+dashboardSelect.addEventListener("change", function () {
+
+    const selectedView = dashboardSelect.value;
+
+    // Hide all dashboard panels
+    Object.values(dashboardPanels).forEach(function (panel) {
+        panel.hidden = true;
+    });
+
+    // Display the selected panel
+    if (selectedView && dashboardPanels[selectedView]) {
+
+        const selectedPanel = dashboardPanels[selectedView];
+
+        selectedPanel.hidden = false;
+
+        // Refresh the selected section
+        if (selectedView === "analytics") {
+            renderDailyChart();
+        }
+
+        if (selectedView === "weekly") {
+            renderWeeklySummary();
+        }
+
+        if (selectedView === "monthly") {
+            renderMonthlySummary();
+        }
+
+        if (selectedView === "history") {
+            renderHistory();
+        }
+
+    }
+
+});
+
+/* Register Progressive Web App Service Worker */
+
+if ("serviceWorker" in navigator) {
+    window.addEventListener("load", () => {
+        navigator.serviceWorker.register("./service-worker.js")
+            .then((registration) => {
+                console.log(
+                    "DailyScore service worker registered:",
+                    registration.scope
+                );
+            })
+            .catch((error) => {
+                console.error(
+                    "Service worker registration failed:",
+                    error
+                );
+            });
+    });
+}
+

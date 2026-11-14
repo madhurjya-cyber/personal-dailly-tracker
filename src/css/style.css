@@ -1,212 +1,543 @@
-/* ---------- Base ---------- */
+
+/* ==========================================
+   DAILY SCORE — PREMIUM PRODUCTIVITY DASHBOARD
+   ========================================== */
+
+/* ---------- Design Tokens ---------- */
+
+:root {
+    --bg: #f3f5fa;
+    --surface: #ffffff;
+    --surface-soft: #f8f9fd;
+
+    --navy: #17213a;
+    --navy-light: #253451;
+
+    --primary: #6258e8;
+    --primary-dark: #5146d5;
+    --primary-soft: #efedff;
+
+    --text: #202942;
+    --secondary: #7d879c;
+    --muted: #a6afbf;
+
+    --border: #e9edf4;
+
+    --success: #20a879;
+    --danger: #e66b75;
+
+    --radius: 18px;
+
+    --shadow: 0 5px 25px rgba(31, 43, 72, 0.045);
+    --shadow-hover: 0 12px 30px rgba(31, 43, 72, 0.085);
+}
+
+/* ---------- Global ---------- */
 
 * {
     box-sizing: border-box;
 }
 
+html {
+    scroll-behavior: smooth;
+}
+
 body {
     margin: 0;
-    font-family: Arial, sans-serif;
-    background-color: #f4f6f8;
-    color: #1f2937;
+    background: var(--bg);
+    color: var(--text);
+    font-family: Inter, -apple-system, BlinkMacSystemFont,
+        "Segoe UI", sans-serif;
+    line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+select {
+    font: inherit;
+}
+
+button {
+    cursor: pointer;
+}
+
+::selection {
+    background: #dcd8ff;
+    color: var(--navy);
 }
 
 /* ---------- Header ---------- */
 
 .app-header {
-    background-color: #1f2937;
+    background: linear-gradient(115deg, #17213a, #222d4b);
     color: white;
-    padding: 24px 40px;
+    padding: 25px 5%;
+    border-bottom: 1px solid rgba(255,255,255,0.07);
+}
+
+.header-content {
+    max-width: 1050px;
+    margin: auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 20px;
 }
 
 .app-header h1 {
     margin: 0;
-    font-size: 32px;
+    font-size: 29px;
+    font-weight: 800;
+    letter-spacing: -1.2px;
+}
+
+.app-header h1 span {
+    color: #9188ff;
 }
 
 .app-header p {
-    margin: 6px 0 0;
-    color: #d1d5db;
+    margin: 3px 0 0;
+    color: #aab4c9;
+    font-size: 12px;
+    letter-spacing: 0.2px;
+}
+
+.header-date {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 5px;
+}
+
+.header-date span {
+    color: #a7a1ff;
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.6px;
+}
+
+.header-date strong {
+    color: #e3e8f3;
+    font-size: 12px;
+    font-weight: 550;
 }
 
 /* ---------- Main Container ---------- */
 
 .container {
     width: 90%;
-    max-width: 900px;
-    margin: 40px auto;
+    max-width: 1050px;
+    margin: 34px auto;
 }
 
-/* ---------- Sections ---------- */
+/* ---------- Common Cards ---------- */
 
 section {
-    background-color: white;
-    padding: 24px;
-    margin-bottom: 24px;
-    border-radius: 12px;
+    background: var(--surface);
+    padding: 27px;
+    margin-bottom: 22px;
+    border: 1px solid rgba(225, 231, 241, 0.9);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+
+    transition:
+        box-shadow 0.25s ease,
+        transform 0.25s ease;
 }
 
-/* ---------- Section Headers ---------- */
+h2 {
+    margin: 5px 0 0;
+    color: var(--text);
+    font-size: 19px;
+    font-weight: 750;
+    letter-spacing: -0.45px;
+}
+
+.eyebrow {
+    color: var(--primary);
+    font-size: 9px;
+    font-weight: 850;
+    letter-spacing: 1.6px;
+}
 
 .section-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 16px;
 }
 
-h2 {
-    margin-top: 0;
+.section-description {
+    margin: 5px 0 0;
+    color: var(--secondary);
+    font-size: 12px;
+}
+
+/* ---------- Daily Progress Card ---------- */
+
+.score-section {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 25px;
+    padding: 32px 38px;
+
+    background: linear-gradient(
+        120deg,
+        #ffffff 55%,
+        #f8f7ff
+    );
+
+    animation: fadeSlideUp 0.6s ease both;
+}
+
+.progress-information h2 {
+    margin-top: 9px;
+}
+
+.score-display {
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    gap: 10px;
+    margin: 9px 0 0;
+    font-size: 48px;
+    font-weight: 800;
+    letter-spacing: -2px;
+    color: var(--navy);
+}
+
+.score-display span:nth-child(2) {
+    color: #c6cbd7;
+    font-weight: 400;
+}
+
+#score-percentage {
+    margin: 0;
+    color: var(--primary);
+    font-size: 24px;
+    font-weight: 800;
+}
+
+.progress-caption {
+    margin: 5px 0 0;
+    color: var(--secondary);
+    font-size: 12px;
+}
+
+/* ---------- Circular Progress Ring ---------- */
+
+.progress-ring-container {
+    padding: 5px;
+}
+
+@property --progress {
+    syntax: "<angle>";
+    inherits: false;
+    initial-value: 0deg;
+}
+
+.progress-ring {
+    --progress: 0deg;
+
+    width: 158px;
+    height: 158px;
+    border-radius: 50%;
+
+    display: grid;
+    place-items: center;
+
+    background: conic-gradient(
+        var(--primary) 0deg,
+        var(--primary) var(--progress),
+        #edf0f7 var(--progress),
+        #edf0f7 360deg
+    );
+
+    box-shadow: 0 8px 25px rgba(98, 88, 232, 0.10);
+}
+
+.progress-ring-inner {
+    width: 128px;
+    height: 128px;
+    border-radius: 50%;
+    background: white;
+
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+}
+
+.progress-ring-inner strong {
+    color: var(--navy);
+    font-size: 30px;
+    font-weight: 800;
+    letter-spacing: -1px;
+}
+
+.progress-ring-inner span {
+    margin-top: 2px;
+    color: var(--muted);
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 1.2px;
 }
 
 /* ---------- Buttons ---------- */
 
 button {
+    border-radius: 9px;
     border: none;
-    border-radius: 6px;
-    padding: 10px 16px;
-    cursor: pointer;
-    font-size: 14px;
+    padding: 10px 15px;
+    font-size: 12px;
+    font-weight: 650;
+
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease,
+        background 0.2s ease,
+        color 0.2s ease;
+}
+
+button:active {
+    transform: scale(0.96);
 }
 
 #add-activity-btn {
-    background-color: #2563eb;
+    background: var(--primary);
     color: white;
+    box-shadow: 0 4px 12px rgba(98, 88, 232, 0.2);
 }
 
 #add-activity-btn:hover {
-    background-color: #1d4ed8;
+    background: var(--primary-dark);
 }
 
-/* ---------- Score ---------- */
+/* ---------- Activities ---------- */
 
-.score-section {
-    text-align: center;
+.activities-section {
+    animation: fadeSlideUp 0.8s ease both;
 }
-
-.score-display {
-    font-size: 42px;
-    font-weight: bold;
-    margin: 20px 0 10px;
-}
-
-#score-percentage {
-    font-size: 20px;
-    font-weight: bold;
-}
-/* ---------- Activity Rows ---------- */
 
 .activity-row {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 14px 0;
-    border-bottom: 1px solid #e5e7eb;
+    gap: 12px;
+    padding: 16px 12px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 9px;
+
+    transition:
+        opacity 0.3s ease,
+        background 0.3s ease,
+        transform 0.25s ease,
+        box-shadow 0.25s ease;
+
+    animation: activityEnter 0.4s ease both;
 }
 
-.activity-row span:first-child {
+.activity-row:last-child {
+    border-bottom: none;
+}
+
+.activity-row:nth-child(1) { animation-delay: 0.05s; }
+.activity-row:nth-child(2) { animation-delay: 0.10s; }
+.activity-row:nth-child(3) { animation-delay: 0.15s; }
+.activity-row:nth-child(4) { animation-delay: 0.20s; }
+.activity-row:nth-child(5) { animation-delay: 0.25s; }
+.activity-row:nth-child(6) { animation-delay: 0.30s; }
+.activity-row:nth-child(7) { animation-delay: 0.35s; }
+.activity-row:nth-child(8) { animation-delay: 0.40s; }
+
+.activity-name {
     flex: 1;
-    font-size: 16px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+    transition: opacity 0.2s ease;
 }
 
-.activity-row input {
-    width: 70px;
-    padding: 8px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    font-size: 16px;
-    text-align: center;
+.activity-row.completed {
+    opacity: 0.62;
+    background: #f0f2ff;
+    border-color: #d9dcff;
 }
-/* ---------- Remove Activity Button ---------- */
 
-.remove-btn {
-    padding: 6px 10px;
-    border: 1px solid #dc2626;
+.activity-row.completed .activity-name {
+    text-decoration: line-through;
+    color: var(--muted);
+}
+
+/* ---------- Custom Checkbox ---------- */
+
+.activity-checkbox {
+    appearance: none;
+    -webkit-appearance: none;
+
+    width: 21px;
+    height: 21px;
+    min-width: 21px;
+
+    display: grid;
+    place-content: center;
+
+    border: 1.7px solid #cbd2df;
     border-radius: 6px;
+
     background: white;
-    color: #dc2626;
     cursor: pointer;
+
+    transition:
+        transform 0.2s ease,
+        border-color 0.2s ease,
+        background 0.2s ease;
 }
 
-.remove-btn:hover {
-    background: #dc2626;
-    color: white;
+.activity-checkbox:checked {
+    border-color: var(--primary);
+    background: var(--primary);
+    animation: checkboxPop 0.25s ease;
 }
-/* ---------- Rename Activity Button ---------- */
+
+.activity-checkbox:checked::after {
+    content: "";
+    width: 5px;
+    height: 10px;
+
+    border: solid white;
+    border-width: 0 2px 2px 0;
+
+    transform: rotate(45deg);
+    margin-top: -2px;
+}
+
+/* ---------- Activity Controls ---------- */
 
 .rename-btn {
-    padding: 6px 10px;
-    border: 1px solid #6b7280;
-    border-radius: 6px;
     background: white;
-    color: #374151;
-    cursor: pointer;
+    border: 1px solid var(--border);
+    color: var(--secondary);
+    padding: 7px 11px;
 }
 
 .rename-btn:hover {
-    background: #374151;
+    color: var(--primary);
+    background: var(--primary-soft);
+    border-color: #d8d3ff;
+}
+
+.remove-btn {
+    background: white;
+    border: 1px solid #f5dadd;
+    color: var(--danger);
+    padding: 7px 11px;
+}
+
+.remove-btn:hover {
+    background: #fff1f2;
+    border-color: #f2b8bf;
+}
+
+/* ---------- Analytics ---------- */
+
+.analytics-section {
+    padding: 28px;
+}
+
+.chart-filters {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 22px 0;
+}
+
+.chart-filter {
+    background: #f7f8fc;
+    border: 1px solid var(--border);
+    color: var(--secondary);
+    padding: 8px 15px;
+    border-radius: 8px;
+}
+
+.chart-filter:hover {
+    background: var(--primary-soft);
+    color: var(--primary);
+}
+
+.chart-filter.active {
+    background: var(--primary);
     color: white;
-}
-/* ---------- Weekly Summary ---------- */
-
-.weekly-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 14px 0;
-    border-bottom: 1px solid #e5e7eb;
+    border-color: var(--primary);
+    box-shadow: 0 3px 10px rgba(98, 88, 232, 0.17);
 }
 
-.weekly-row:last-child {
-    border-bottom: none;
-}
-/* ---------- History ---------- */
-
-.history-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-
-    padding: 12px 0;
-
-    border-bottom: 1px solid #e5e7eb;
+.chart-container {
+    position: relative;
+    width: 100%;
+    height: 310px;
 }
 
-.history-row:last-child {
-    border-bottom: none;
+/* ---------- Summary Cards ---------- */
+
+.summary-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 22px;
+    align-items: start;
 }
 
-.history-date {
-    font-weight: 500;
+.summary-grid section {
+    min-width: 0;
+    margin-bottom: 22px;
 }
 
-.history-score {
-    font-weight: 600;
-}
-/* ---------- Monthly Summary ---------- */
+/* ---------- Summary Rows ---------- */
 
+.weekly-row,
 .monthly-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    padding: 14px 0;
-
-    border-bottom: 1px solid #e5e7eb;
+    gap: 12px;
+    padding: 13px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
 }
 
+.weekly-row:last-child,
 .monthly-row:last-child {
     border-bottom: none;
 }
+
+.weekly-row span,
+.monthly-row span {
+    color: var(--secondary);
+}
+
+.weekly-row strong,
+.monthly-row strong {
+    color: var(--text);
+    font-weight: 700;
+    text-align: right;
+}
+
 /* ---------- History ---------- */
 
 .history-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    gap: 12px;
+    padding: 15px 10px;
+    border-bottom: 1px solid var(--border);
+    border-radius: 8px;
+    cursor: pointer;
 
-    padding: 14px 0;
-
-    border-bottom: 1px solid #e5e7eb;
+    transition:
+        background 0.2s ease,
+        transform 0.2s ease;
 }
 
 .history-row:last-child {
@@ -214,112 +545,650 @@ button {
 }
 
 .history-date {
-    color: #1f2937;
+    color: var(--text);
+    font-size: 12px;
+    font-weight: 600;
 }
 
 .history-score {
-    font-weight: 600;
+    color: var(--primary);
+    font-size: 12px;
+    font-weight: 750;
 }
+
+.history-edit-btn {
+    background: white;
+    border: 1px solid #dcd9ff;
+    color: var(--primary);
+    padding: 6px 12px;
+}
+
+.history-edit-btn:hover {
+    background: var(--primary-soft);
+}
+
 /* ---------- History Details ---------- */
 
-.history-row {
-    cursor: pointer;
-    transition: background-color 0.15s ease;
-}
-
-.history-row:hover {
-    background-color: #f8fafc;
-}
-
 .history-details {
-    margin: 0 0 8px 0;
-    padding: 8px 16px;
-    background-color: #f8fafc;
-    border-radius: 6px;
+    margin-bottom: 12px;
+    padding: 12px 16px;
+    background: var(--surface-soft);
+    border: 1px solid var(--border);
+    border-radius: 11px;
 }
 
 .history-detail-row {
     display: flex;
     justify-content: space-between;
     align-items: center;
-
-    padding: 8px 0;
-
-    font-size: 14px;
-
-    border-bottom: 1px solid #e5e7eb;
+    gap: 12px;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
 }
 
-.history-detail-row:last-child {
+.history-detail-row:last-of-type {
     border-bottom: none;
 }
 
+.history-detail-row span {
+    flex: 1;
+}
+
 .history-detail-row span:last-child {
-    font-weight: 600;
-}
-
-.history-edit-btn,
-.history-details button {
-    padding: 5px 12px;
-    border: 1px solid #64748b;
-    border-radius: 5px;
-    background: white;
-    color: #1f2937;
-    cursor: pointer;
-}
-
-.history-edit-btn:hover,
-.history-details button:hover {
-    background: #e5e7eb;
+    text-align: right;
+    font-weight: 700;
 }
 
 .history-details input {
-    width: 65px;
-    padding: 5px;
-    border: 1px solid #cbd5e1;
-    border-radius: 5px;
-}
-
-.history-details button {
-    margin: 10px 8px 0 0;
-}
-
-.history-details button:first-of-type {
-    background: #2563eb;
-    color: white;
-    border-color: #2563eb;
-}
-
-/* ---------- Chart Filters ---------- */
-
-.chart-filters {
-    display: flex;
-    gap: 10px;
-    margin: 20px 0;
-    flex-wrap: wrap;
-}
-
-.chart-filter {
-    padding: 8px 16px;
-    border: 1px solid #d1d5db;
-    border-radius: 6px;
-    background: white;
-    color: #374151;
+    width: 20px;
+    height: 20px;
+    accent-color: var(--primary);
     cursor: pointer;
 }
 
-.chart-filter:hover {
-    background: #f3f4f6;
+.history-details button {
+    margin: 12px 8px 0 0;
+    padding: 7px 13px;
 }
 
-.chart-filter.active {
-    background: #2563eb;
+.history-details button:first-of-type {
+    background: var(--primary);
     color: white;
-    border-color: #2563eb;
 }
 
-.chart-container {
-    position: relative;
+.history-details button:last-of-type {
+    background: white;
+    border: 1px solid var(--border);
+    color: var(--secondary);
+}
+
+/* ---------- Dashboard Dropdown ---------- */
+
+.more-dashboard-section {
+    margin-top: 0;
+    margin-bottom: 20px;
+    padding: 16px 20px;
+}
+
+.more-dashboard-section .section-header {
+    display: none;
+}
+
+.dashboard-dropdown {
+    margin-top: 0;
+    max-width: 320px;
+}
+
+#dashboard-view-select {
     width: 100%;
-    height: 300px;
+    padding: 14px 16px;
+    background: white;
+    border: 1px solid #e1e5f0;
+    border-radius: 10px;
+    box-shadow: 0 3px 12px rgba(31, 43, 72, 0.04);
+    color: #202942;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    outline: none;
+
+    transition:
+        border-color 0.2s ease,
+        box-shadow 0.2s ease;
+}
+
+#dashboard-view-select:hover,
+#dashboard-view-select:focus {
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(98, 88, 232, 0.10);
+}
+
+.dashboard-panel {
+    margin-top: 25px;
+    padding-top: 22px;
+    border-top: 1px solid #e9edf4;
+}
+
+.dashboard-panel[hidden] {
+    display: none;
+}
+
+.dashboard-panel h2 {
+    margin-bottom: 15px;
+}
+
+.dashboard-panel:not([hidden]) {
+    animation: panelEnter 0.35s ease both;
+}
+
+/* ---------- Footer ---------- */
+
+.app-footer {
+    text-align: center;
+    padding: 10px 0 25px;
+}
+
+.app-footer p {
+    color: var(--muted);
+    font-size: 11px;
+    letter-spacing: 0.3px;
+}
+
+/* ---------- Animations ---------- */
+
+@keyframes fadeSlideUp {
+    from {
+        opacity: 0;
+        transform: translateY(14px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes activityEnter {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes panelEnter {
+    from {
+        opacity: 0;
+        transform: translateY(12px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes checkboxPop {
+    0% {
+        transform: scale(0.8);
+    }
+
+    65% {
+        transform: scale(1.15);
+    }
+
+    100% {
+        transform: scale(1);
+    }
+}
+
+/* ==========================================
+   HOVER EFFECTS — 1.4 SCALE
+   Dashboard dropdown excluded
+   ========================================== */
+
+@media (hover: hover) and (pointer: fine) {
+
+    /* Main dashboard cards */
+
+    .score-section:hover,
+    .activities-section:hover,
+    .dashboard-panel:not([hidden]):hover {
+        transform: scale(1.4);
+        z-index: 20;
+        position: relative;
+        box-shadow: var(--shadow-hover);
+    }
+
+    /* Activity rows */
+
+    .activity-row:hover {
+        transform: translateY(-2px) scale(1.4);
+        z-index: 25;
+        position: relative;
+        background: #f9f9ff;
+        box-shadow: 0 8px 20px rgba(25, 35, 65, 0.12);
+    }
+
+    /* Checkboxes */
+
+    .activity-checkbox:hover,
+    .history-details input:hover {
+        transform: scale(1.4);
+    }
+
+    /* Buttons */
+
+    button:hover {
+        transform: translateY(-2px) scale(1.4);
+        box-shadow: 0 5px 12px rgba(40, 45, 80, 0.12);
+    }
+
+    /* History rows */
+
+    .history-row:hover {
+        transform: scale(1.4);
+        position: relative;
+        z-index: 10;
+        background: #f8f8ff;
+    }
+
+    /* Dropdown exclusion */
+
+    .more-dashboard-section:hover {
+        transform: none;
+    }
+
+    .dashboard-dropdown select:hover,
+    .dashboard-dropdown select:focus {
+        transform: none;
+    }
+}
+
+/* ---------- Focus Accessibility ---------- */
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+    outline: 3px solid rgba(98, 88, 232, 0.25);
+    outline-offset: 3px;
+}
+
+/* ---------- Responsive ---------- */
+
+@media (max-width: 650px) {
+
+    .app-header {
+        padding: 20px;
+    }
+
+    .header-content {
+        align-items: flex-start;
+    }
+
+    .header-date {
+        max-width: 48%;
+    }
+
+    .header-date strong {
+        font-size: 10px;
+    }
+
+    .container {
+        width: 94%;
+        margin: 20px auto;
+    }
+
+    section {
+        padding: 20px 16px;
+        margin-bottom: 16px;
+        border-radius: 14px;
+    }
+
+    .score-section {
+        padding: 24px 18px;
+        gap: 8px;
+    }
+
+    .score-display {
+        font-size: 36px;
+    }
+
+    .progress-ring {
+        width: 112px;
+        height: 112px;
+    }
+
+    .progress-ring-inner {
+        width: 90px;
+        height: 90px;
+    }
+
+    .progress-ring-inner strong {
+        font-size: 22px;
+    }
+
+    .progress-ring-inner span {
+        font-size: 7px;
+    }
+
+    .summary-grid {
+        grid-template-columns: 1fr;
+        gap: 0;
+    }
+
+    .summary-grid section {
+        margin-bottom: 16px;
+    }
+
+    .chart-container {
+        height: 250px;
+    }
+
+    .activity-row {
+        gap: 8px;
+        padding: 13px 4px;
+    }
+
+    .activity-name {
+        font-size: 12px;
+        overflow-wrap: anywhere;
+    }
+
+    .rename-btn,
+    .remove-btn {
+        padding: 6px 8px;
+        font-size: 10px;
+    }
+
+    .history-row {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 380px) {
+
+    .header-date {
+        display: none;
+    }
+
+    .score-section {
+        align-items: center;
+    }
+
+    .progress-ring {
+        width: 95px;
+        height: 95px;
+    }
+
+    .progress-ring-inner {
+        width: 77px;
+        height: 77px;
+    }
+
+    .progress-ring-inner strong {
+        font-size: 19px;
+    }
+}
+
+/* ---------- Reduced Motion Accessibility ---------- */
+
+@media (prefers-reduced-motion: reduce) {
+
+    *,
+    *::before,
+    *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}
+
+/* Today's Score — Purple Accent Design */
+.score-section {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #f8f5ff 55%,
+        #f0eaff 100%
+    );
+    border: 1px solid #e7ddff;
+    box-shadow:
+        0 8px 24px rgba(91, 55, 160, 0.08),
+        0 2px 6px rgba(91, 55, 160, 0.04);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.score-section h2 {
+    color: #38245f;
+}
+
+.score-section:hover {
+    box-shadow: 0 12px 30px rgba(91, 55, 160, 0.13);
+}
+
+/* Today's Activities — Purple Accent Design */
+.activities-section {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #faf8ff 100%
+    );
+    border: 1px solid #e9e1f8;
+    box-shadow: 0 8px 24px rgba(91, 55, 160, 0.06);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+.activities-section h2 {
+    color: #38245f;
+}
+
+.activity-row {
+    border-color: #eee8f8;
+    transition: background 0.2s ease, transform 0.2s ease;
+}
+
+.activity-row.completed {
+    background: #f4efff;
+}
+
+/* Dashboard Views — Refined Dropdown */
+#dashboard-view-select {
+    background-color: #ffffff;
+    color: #38245f;
+    border: 1px solid #ded2f5;
+    border-radius: 10px;
+    padding: 10px 14px;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(91, 55, 160, 0.06);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: pointer;
+}
+
+#dashboard-view-select:hover {
+    border-color: #a78bdb;
+}
+
+#dashboard-view-select:focus {
+    outline: none;
+    border-color: #8b5cf6;
+    box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.15);
+}
+
+/* Analytics Panel — Purple Accent Design */
+#analytics-panel {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #faf8ff 100%
+    );
+    border: 1px solid #e9e1f8;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(91, 55, 160, 0.07);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+#analytics-panel h2,
+#analytics-panel h3 {
+    color: #38245f;
+}
+
+#analytics-panel button.active {
+    background: #7545c5;
+    color: #ffffff;
+    border-color: #7545c5;
+}
+
+/* Weekly Summary — Purple Accent Design */
+#weekly-panel {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #faf8ff 100%
+    );
+    border: 1px solid #e9e1f8;
+    border-radius: 16px;
+    box-shadow: 0 8px 24px rgba(91, 55, 160, 0.07);
+    transition: box-shadow 0.3s ease, transform 0.3s ease;
+}
+
+#weekly-panel h2,
+#weekly-panel h3 {
+    color: #38245f;
+}
+
+/* Weekly Summary — Spacing Refinement */
+#weekly-panel {
+    padding: 26px;
+    box-sizing: border-box;
+}
+
+#weekly-panel h2 {
+    margin-top: 14px;
+    margin-bottom: 28px;
+    line-height: 1.4;
+}
+
+#weekly-panel h3 {
+    margin-bottom: 16px;
+}
+
+#weekly-panel .summary-row {
+    padding: 16px 0;
+    min-height: 52px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 20px;
+}
+
+/* Monthly Summary — Purple Accent Design */
+#monthly-panel {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #faf8ff 100%
+    );
+    border: 1px solid #e9e1f8;
+    border-radius: 16px;
+    padding: 26px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(91, 55, 160, 0.07);
+}
+
+#monthly-panel h2 {
+    color: #38245f;
+    margin-top: 14px;
+    margin-bottom: 28px;
+    line-height: 1.4;
+}
+
+#monthly-panel h3 {
+    color: #38245f;
+    margin-bottom: 16px;
+}
+
+/* Analytics — Spacing Refinement */
+#analytics-panel {
+    padding: 26px;
+    box-sizing: border-box;
+}
+
+#analytics-panel h2 {
+    margin-top: 14px;
+    margin-bottom: 28px;
+    line-height: 1.4;
+}
+
+#analytics-panel h3 {
+    margin-bottom: 16px;
+}
+
+#analytics-panel canvas {
+    margin-top: 12px;
+}
+
+/* History — Purple Accent and Spacing */
+#history-panel {
+    background: linear-gradient(
+        135deg,
+        #ffffff 0%,
+        #faf8ff 100%
+    );
+    border: 1px solid #e9e1f8;
+    border-radius: 16px;
+    padding: 26px;
+    box-sizing: border-box;
+    box-shadow: 0 8px 24px rgba(91, 55, 160, 0.07);
+}
+
+#history-panel h2 {
+    color: #38245f;
+    margin-top: 14px;
+    margin-bottom: 28px;
+    line-height: 1.4;
+}
+
+#history-panel h3 {
+    color: #38245f;
+    margin-bottom: 16px;
+}
+
+/* Dashboard Navigation — Compact Layout */
+
+.more-dashboard-section {
+    background: transparent;
+    border: none;
+    box-shadow: none;
+    padding: 0;
+    margin-bottom: 18px;
+}
+
+.dashboard-dropdown {
+    display: inline-flex;
+    width: min(100%, 360px);
+    background: #ffffff;
+    border: 1px solid #e5dcf7;
+    border-radius: 12px;
+    padding: 5px;
+    box-shadow: 0 4px 12px rgba(91, 55, 160, 0.06);
+    box-sizing: border-box;
+}
+
+#dashboard-view-select {
+    width: 100%;
+    border: none;
+    box-shadow: none;
+    background: transparent;
+    padding: 10px 12px;
+}
+
+#dashboard-view-select:focus {
+    outline: none;
+    box-shadow: none;
 }
